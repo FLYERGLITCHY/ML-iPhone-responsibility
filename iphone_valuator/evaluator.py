@@ -378,21 +378,17 @@ def _supported_condition(text: str) -> Condition:
 
 
 def prompt_query(
-    input_fn: Callable[[str], str] = input, output_fn: Callable[[str], None] = print
+    input_fn: Callable[[str], str] | None = None, output_fn: Callable[[str], None] | None = None
 ) -> ListingQuery:
     """Ask for listing parameters one by one, re-prompting on invalid input."""
-    model = _ask(
-        "Model (e.g. iPhone 13 Pro, 14 pro max): ", parse_model_input, input_fn, output_fn
-    )
+    read = input_fn or input
+    write = output_fn or print
+    model = _ask("Model (e.g. iPhone 13 Pro, 14 pro max): ", parse_model_input, read, write)
     options = "/".join(format_storage(size) for size in _storage_options(model))
-    storage = _ask(f"Storage [{options}]: ", _storage_for(model), input_fn, output_fn)
-    condition = _ask(
-        "Condition [new/used/refurbished]: ", _supported_condition, input_fn, output_fn
-    )
-    battery = _ask(
-        "Battery health, % (Enter if unknown): ", parse_battery_input, input_fn, output_fn
-    )
-    price = _ask("Asking price, RUB: ", parse_price_input, input_fn, output_fn)
+    storage = _ask(f"Storage [{options}]: ", _storage_for(model), read, write)
+    condition = _ask("Condition [new/used/refurbished]: ", _supported_condition, read, write)
+    battery = _ask("Battery health, % (Enter if unknown): ", parse_battery_input, read, write)
+    price = _ask("Asking price, RUB: ", parse_price_input, read, write)
     return ListingQuery(
         model=model,
         storage_gb=storage,
@@ -429,22 +425,24 @@ def format_report(valuation: Valuation) -> str:
 
 def run_interactive(
     valuator: Valuator,
-    input_fn: Callable[[str], str] = input,
-    output_fn: Callable[[str], None] = print,
+    input_fn: Callable[[str], str] | None = None,
+    output_fn: Callable[[str], None] | None = None,
 ) -> int:
     """Interactive loop; returns an exit code."""
-    output_fn("iPhone listing valuator. Press Ctrl+C to quit.")
+    read = input_fn or input
+    write = output_fn or print
+    write("iPhone listing valuator. Press Ctrl+C to quit.")
     try:
         while True:
-            valuation = valuator.evaluate(prompt_query(input_fn, output_fn))
-            output_fn("")
-            output_fn(format_report(valuation))
-            output_fn("")
-            answer = input_fn("Evaluate another listing? [y/N]: ").strip().lower()
+            valuation = valuator.evaluate(prompt_query(read, write))
+            write("")
+            write(format_report(valuation))
+            write("")
+            answer = read("Evaluate another listing? [y/N]: ").strip().lower()
             if not answer.startswith(("y", "д")):
                 return 0
     except (EOFError, KeyboardInterrupt):
-        output_fn("")
+        write("")
         return 0
 
 
