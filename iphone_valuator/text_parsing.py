@@ -44,7 +44,10 @@ def normalize_text(text: object) -> str:
 
 _CLAUSE_BREAK_RE: Final = re.compile(r"[.!?;\n]|\s(?:но|однако|but)\s")
 _NEAR_NEGATION_RE: Final = re.compile(r"(?:^|[\s,(])(?:не|ни|not|never)\s+(?:\S+\s+)?$")
-_FAR_NEGATION_RE: Final = re.compile(r"(?:^|[\s,(])(?:без|нет|no|without)\s+(?:\S+\s+){0,4}$")
+_FAR_NEGATION_RE: Final = re.compile(
+    r"(?:^|[\s,(])(?:без|нет|no|without)\s+(?P<span>(?:\S+\s+){0,4})$"
+)
+_AFFIRMATION_RE: Final = re.compile(r"\b(?:есть|имеется|имеются|присутству\w*|but)\b")
 _POST_NEGATION_RE: Final = re.compile(
     r"^(?:\s*(?:,|\bи\b|\bили\b)\s*[^\s,]+)*\s*[,:\-–—]?\s*(?:нет|отсутству\w*|no|none)(?!\w)"
 )
@@ -54,9 +57,10 @@ _NEGATION_WINDOW: Final = 60
 def _is_negated(text: str, start: int, end: int) -> bool:
     before = _CLAUSE_BREAK_RE.split(text[max(0, start - _NEGATION_WINDOW) : start])[-1]
     after = _CLAUSE_BREAK_RE.split(text[end : end + _NEGATION_WINDOW], maxsplit=1)[0]
+    far = _FAR_NEGATION_RE.search(before)
     return bool(
         _NEAR_NEGATION_RE.search(before)
-        or _FAR_NEGATION_RE.search(before)
+        or (far is not None and not _AFFIRMATION_RE.search(far.group("span")))
         or _POST_NEGATION_RE.search(after)
     )
 
@@ -160,7 +164,7 @@ STORAGE_PATTERN: Final = re.compile(
     r"(?P<unit>гб|gb|гиг\w*|gig\w*|тб|tb|терабайт\w*|terabyte\w*|g|г)(?![a-zа-я])"
 )
 _BARE_STORAGE_RE: Final = re.compile(
-    r"(?<![\d.,])(?<![\d.,] )(?P<value>64|128|256|512)(?![\d.,%])(?!\s+\d)"
+    r"(?<![\d.,])(?P<value>64|128|256|512)(?![\d.,%])(?!\s+\d)"
     r"(?!\s*(?:₽|руб|р\b|т\.?\s*р|тыс|k\b|к\b|мес|шт))"
 )
 
