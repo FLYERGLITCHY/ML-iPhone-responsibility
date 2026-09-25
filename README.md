@@ -212,8 +212,13 @@ from iphone_valuator.evaluator import ListingQuery, Valuator
 
 valuator = Valuator.from_path(Path("artifacts/model.joblib"))
 result = valuator.evaluate(
-    ListingQuery(model="iPhone 13 Pro", storage_gb=256, condition=Condition.USED,
-                 asking_price=65_000, battery_health=78)
+    ListingQuery(
+        model="iPhone 13 Pro",
+        storage_gb=256,
+        condition=Condition.USED,
+        asking_price=65_000,
+        battery_health=78,
+    )
 )
 print(result.verdict, result.fair_price, result.summary)
 ```
