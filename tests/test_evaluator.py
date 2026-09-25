@@ -184,6 +184,12 @@ def test_valuation_to_dict() -> None:
     json.dumps(payload, ensure_ascii=False)
 
 
+def test_format_report_rounds_the_fair_range_inwards() -> None:
+    report = format_report(stub_valuator(price=18_040.0).evaluate(query(asking_price=19_990)))
+    assert "Fair market value : ~18,000 RUB (fair range 16,300 RUB – 19,800 RUB)" in report
+    assert "Overpriced / Not Worth It" in report
+
+
 def test_format_report() -> None:
     report = format_report(stub_valuator().evaluate(query(battery_health=None)))
     assert "battery unknown (assumed ~86%)" in report

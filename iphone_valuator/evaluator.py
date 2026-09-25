@@ -14,6 +14,7 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import math
 import re
 import sys
 from collections.abc import Callable, Sequence
@@ -51,6 +52,7 @@ SLIGHT_DEVIATION_PCT: Final = 5.0
 LOW_BATTERY_PCT: Final = 80
 HEALTHY_BATTERY_PCT: Final = 90
 DISPLAY_ROUNDING_RUB: Final = 500
+RANGE_ROUNDING_RUB: Final = 100
 SUPPORTED_CONDITIONS: Final = (Condition.NEW, Condition.USED, Condition.REFURBISHED)
 _THOUSANDS_PRICE_RE: Final = re.compile(r"\s*(\d+(?:[.,]\d+)?)\s*(?:k|к|тыс\.?)\s*", re.IGNORECASE)
 
@@ -136,6 +138,12 @@ def format_rub(value: float) -> str:
 
 def _rounded(value: float) -> float:
     return round(value / DISPLAY_ROUNDING_RUB) * DISPLAY_ROUNDING_RUB
+
+
+def _inner_range(low: float, high: float) -> tuple[float, float]:
+    """Round range bounds inwards so every displayed price is truly inside the fair band."""
+    step = RANGE_ROUNDING_RUB
+    return math.ceil(round(low, 2) / step) * step, math.floor(round(high, 2) / step) * step
 
 
 def _battery_phrase(query: ListingQuery) -> str:
@@ -409,12 +417,12 @@ def format_report(valuation: Valuation) -> str:
         battery = f"battery {query.battery_health}%"
     else:
         battery = f"battery unknown (assumed ~{valuation.battery_assumed:.0f}%)"
-    low, high = valuation.fair_range
+    low, high = _inner_range(*valuation.fair_range)
     lines = [
         f"{query.model} {format_storage(query.storage_gb)} | {query.condition.label} | {battery} "
         f"| {valuation.region} | asking {format_rub(query.asking_price)}",
         f"Fair market value : ~{format_rub(_rounded(valuation.fair_price))} "
-        f"(fair range {format_rub(_rounded(low))} – {format_rub(_rounded(high))})",
+        f"(fair range {format_rub(low)} – {format_rub(high)})",
         f"Price delta       : {valuation.delta_pct:+.1f}%",
         f"Verdict           : {valuation.verdict.value}",
         f"Summary           : {valuation.summary}",
