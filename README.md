@@ -117,7 +117,7 @@ order and each one reports how many rows it removed:
 | `condition_for_parts` | Avito condition "Требует ремонта" / for parts |
 | `price_below_minimum`, `price_above_maximum` | Prices below 5,000 or above 400,000 RUB |
 | `duplicate_item_id`, `duplicate_listing_url`, `duplicate_content` | Exact duplicates and re-posted ads (same model, storage, price and description) |
-| `suspiciously_cheap` | Below 30% of the model's median price, or below 50% combined with installment, down-payment or trade-in wording |
+| `suspiciously_cheap` | Below 30% of the median price for the same model and storage, or below 50% combined with installment, down-payment or trade-in wording |
 | `price_outlier_iqr` | Outside `Q1 − 2·IQR … Q3 + 2·IQR` of log-price within (model, storage, condition), falling back to coarser groups when a group has fewer than 10 listings |
 | `price_outlier_isolation_forest` | Multivariate anomalies: price deviation vs. battery, condition, storage, age (2% contamination) |
 
@@ -182,6 +182,8 @@ Inputs: model, storage, condition, battery health (optional) and asking price, p
 python -m iphone_valuator.evaluator -m "14" -s 128 -c "б/у" -b 88 -p 40000 --region "Санкт-Петербург" --json
 python -m iphone_valuator.evaluator --interactive
 ```
+
+Example `--json` output (abridged):
 
 ```json
 {
