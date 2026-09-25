@@ -222,7 +222,7 @@ print(result.verdict, result.fair_price, result.summary)
 
 ```bash
 pip install -e ".[dev]"
-pytest              # 376 tests, no network or browser needed
+pytest              # no network or browser needed
 ruff check . && ruff format --check .
 mypy iphone_valuator
 ```
