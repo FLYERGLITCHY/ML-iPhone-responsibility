@@ -196,6 +196,7 @@ def test_parse_battery_health_rejects_unanchored_or_implausible(text: object) ->
         ("iPhone 12", "Забыл пароль", JunkReason.LOCKED),
         ("iPhone XR", "Работает через r-sim", JunkReason.LOCKED),
         ("iPhone 11", "На запчасти", JunkReason.FOR_PARTS),
+        ("iPhone 11", "Отдам на детали", JunkReason.FOR_PARTS),
         ("iPhone 11", "Не включается после обновления", JunkReason.FOR_PARTS),
         ("iPhone 11", "Face ID не работает", JunkReason.FOR_PARTS),
         ("iPhone 11", "Требует ремонта", JunkReason.FOR_PARTS),
@@ -235,6 +236,7 @@ def test_detect_junk_flags_bad_listings(title: str, description: str, reason: Ju
         "В комплекте чехол и стекло",
         "Неверлок, работает с любой симкой",
         "Никогда не вскрывался, не ремонтировался",
+        "Приезжайте на детальный осмотр",
     ],
 )
 def test_detect_junk_respects_negations_and_harmless_mentions(description: str) -> None:
